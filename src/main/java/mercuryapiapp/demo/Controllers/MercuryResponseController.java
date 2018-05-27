@@ -1,9 +1,5 @@
 package mercuryapiapp.demo.Controllers;
 
-<<<<<<< Updated upstream
-public class MercuryResponseController {
-
-=======
 import com.google.gson.Gson;
 import mercuryapiapp.demo.Models.MercuryResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -30,7 +26,7 @@ public class MercuryResponseController {
     @Value("${mercury-url}")
     private String mercuryUrl;
 
-    @RequestMapping(value = "/dupa", method = RequestMethod.GET)
+    @RequestMapping(value = "/request", method = RequestMethod.GET)
     public void getResponceMercuryWebside(@RequestParam("url") String url){
 
         RestTemplate restTemplate = new RestTemplate();
@@ -45,5 +41,9 @@ public class MercuryResponseController {
         System.out.println(mercuryResponse.toString());
     }
 
->>>>>>> Stashed changes
+    private int countTags(String content){
+        return 0;
+    }
+
+
 }
