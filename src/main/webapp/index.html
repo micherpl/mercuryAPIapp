@@ -3,41 +3,113 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
 <head>
+    <style>
+        div.a {
+            text-indent: 50px;
+        }
+
+    </style>
 </head>
 
 <body ng-app="mercuryApp" ng-controller="myCtrl">
 
-    <div class="jumbotron text-center">
-        <h1>Mercury </h1>
-    </div>
-
-    <form">
-        <div class="form-group">
-            <label>Enter the the url address:</label>
-            <input placeholder="Type URL here"  class="form-control" ng-model="url.name">
+    <div class="container">
+        <div class="jumbotron text-center">
+            <h1>Mercury Website Parser</h1>
         </div>
-        <button type="submit" ng-click='onClickFunc()' class="btn btn-default">Submit</button>
-    </form>
 
-    <div class="well well-sm" ng-repeat="x in records">{{x}}</div>
+        <form>
+            <div class="form-group">
+                <label>Enter the the url address:</label>
+                <input placeholder="Type URL here"  class="form-control" ng-model="url.name">
+            </div>
+            <button type="submit" ng-click='onClickFunc()' class="btn btn-default">Submit</button>
+        </form>
 
+        <h2>Last entered urls:</h2>
+        <div class="well well-sm" ng-repeat="x in records track by $index">{{x}}</div>
 
-    <p>form = {{url}}</p>
+        <h2>Website content:</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Content name</th>
+                <th class="col-md-8">Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Author</td>
+                <td class="col-md-8">{{websiteContentModel.author}}</td>
+            </tr>
+            <tr>
+                <td>Title</td>
+                <td class="col-md-8">{{websiteContentModel.title}}</td>
+            </tr>
+            <tr>
+                <td>Date published</td>
+                <td class="col-md-8">{{websiteContentModel.date_published | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+            </tr>
+            <tr>
+                <td>Url</td>
+                <td class="col-md-8">{{websiteContentModel.url}}</td>
+            <tr>
+                <td>Domain</td>
+                <td class="col-md-8">{{websiteContentModel.domain}}</td>
+            </tr>
+            <tr>
+                <td>Number of words</td>
+                <td class="col-md-8">{{websiteContentModel.word_count}}</td>
+            </tr>
+            <tr>
+                <td>Total pages</td>
+                <td class="col-md-8">{{websiteContentModel.total_pages}}</td>
+            </tr>
+            </tbody>
+        </table>
 
-    <h1>{{myWelcome}}</h1>
+        <p>HTML Tag Count:</p>
+        <div class="container">
+            <div class="row">
+                <div class="well well-sm" ng-repeat="tag in htmlTags | orderBy: 'value' : true | limitTo:10 ">  {{ tag.key }} ({{ tag.value }}) </div>
+            </div>
+        </div>
+
+        <p>Raw content of website:</p>
+        <pre><code>
+            {{websiteContentModel.content}}
+        </code></pre>
+    </div>
 
     <script>
         var app = angular.module("mercuryApp", []);
             app.controller('myCtrl', function($scope, $http) {
-                $scope.records = []
+                $scope.records = [];
 
                 $scope.onClickFunc = function () {
-                    $http.get('/dupa', {params: {url: $scope.url.name}});
-                    $scope.records.push($scope.url.name);
+                    if ($scope.records.length === 5) {
+                        $scope.records.pop();
+                        $scope.records.unshift($scope.url.name);
+                    } else {
+                        $scope.records.unshift($scope.url.name);
+                    }
+                    $http.get('/request', {params: {url: $scope.url.name}}).then(function (response) {
+                        $scope.websiteContentModel = response.data;
+                        $scope.htmlTags = [];
+                        angular.forEach($scope.websiteContentModel.countedTags, function(value, key) {
+                            $scope.htmlTags.push({
+                                key: key,
+                                value: value
+                            });
+                        });
+                    }, function(response) {
+                        alert( "failure message: " + JSON.stringify({data: response}));
+                });
                 }
         });
     </script>
